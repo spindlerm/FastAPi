@@ -1,8 +1,11 @@
-from pydantic import BaseModel,Field,ConfigDict
-from .py_objectid import PyObjectId
+"""Create Item model response object, used for HTTP Post response"""
+from pydantic import BaseModel, Field, ConfigDict
+from pydantic_mongo import ObjectIdField
+
 
 class CreateItemResponse(BaseModel):
-    id: PyObjectId = Field(None,alias='_id')
+    """Create Item Response Model object, used for HTTP Post response"""
+    id: ObjectIdField = Field(None, alias="_id")
     name: str
     description: str | None
     price: int = Field(ge=0, le=10)
