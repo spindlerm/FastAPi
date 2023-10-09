@@ -6,7 +6,9 @@ from pydantic import BaseModel, Field
 class UpdateItem(BaseModel):
     """UpdateItem Model"""
 
-    name: str | None
-    description: str | None
-    price: int = Field(ge=0, le=10)
-    tax: float  
+    # All fields are optional for the update/Put operations
+
+    name: str | None = None
+    description: str | None = None
+    price: int = Field(None, ge=0, le=10)
+    tax: float  = None
