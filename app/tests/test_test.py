@@ -35,14 +35,14 @@ def test_get_nonexistent_item():
     """When calling get with a non existant id, retrun 404 - Unprocessable body """
    
     #Fetch the item with valid non existant id
-    id = ObjectIdField("1111fa8fd3e0a099b5d3a813")
+    id = "1111fa8fd3e0a099b5d3a813"
 
-    response = client.get(f"/test/{id}")
+    response = client.get(f"/test/{ObjectIdField(id)}")
     assert response.status_code == 404
-    assert response.json() == "Requested Item does not exist"
+    assert response.json() == f"Item with id: {id} does not exist"
 
 def test_get_with_invalid_id():
-    """When calling get with a non existant id, retrun 422 - Unprocessable body """
+    """When calling get with a non existant id, return 422 - Unprocessable body """
    
     #Fetch the item with an invalid id
     id = ObjectIdField("invalidid")
@@ -50,5 +50,23 @@ def test_get_with_invalid_id():
     response = client.get(f"/test/{id}")
     assert response.status_code == 422
 
-    
+
+def test_delete_invalid_id():
+    """When calling delete with a non existant id, return 422 - Unprocessable body """
    
+    #Fetch the item with an invalid id
+    id = ObjectIdField("invalidid")
+
+    response = client.delete(f"/test/{id}")
+    assert response.status_code == 422
+
+   
+def test_delete_nonexistent_item():
+    """When calling delete with a non existant id, return 404 - Unprocessable body """
+   
+    #Fetch the item with valid non existant id
+    id = "1111fa8fd3e0a099b5d3a813"
+
+    response = client.delete(f"/test/{ObjectIdField(id)}")
+    assert response.status_code == 404
+    assert response.json() == f"Item with id: {id} does not exist"
