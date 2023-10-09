@@ -6,7 +6,7 @@ from pydantic_mongo import ObjectIdField
 client = TestClient(app)
 
 def test_create():
-    """Example test use case"""
+    """Test the creation (post) and get for an item"""
 
     item_to_create = {
     "name": "joes Bloggs",
@@ -30,4 +30,25 @@ def test_create():
     #Add the returned id to the retrived_Item
     retrived_item["_id"] = id
     assert response.json() == retrived_item
+
+def test_get_nonexistent_item():
+    """When calling get with a non existant id, retrun 404 - Unprocessable body """
+   
+    #Fetch the item with valid non existant id
+    id = ObjectIdField("1111fa8fd3e0a099b5d3a813")
+
+    response = client.get(f"/test/{id}")
+    assert response.status_code == 404
+    assert response.json() == "Requested Item does not exist"
+
+def test_get_with_invalid_id():
+    """When calling get with a non existant id, retrun 422 - Unprocessable body """
+   
+    #Fetch the item with an invalid id
+    id = ObjectIdField("invalidid")
+
+    response = client.get(f"/test/{id}")
+    assert response.status_code == 422
+
+    
    
