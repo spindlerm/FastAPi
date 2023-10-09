@@ -10,6 +10,8 @@ from app.models.item_response import ItemResponse
 
 
 mdbc = MongoClient("mongodb://localhost:27017/")
+data_base = mdbc["test-database"]
+collection = data_base["test-collection"]
 
 router = APIRouter(
     prefix="/items",
@@ -21,8 +23,7 @@ router = APIRouter(
 @router.get("/{item_id}")
 async def read_item(item_id: ObjectIdField) -> JSONResponse:
     """Called to get an Item"""
-    data_base = mdbc["test-database"]
-    collection = data_base["test-collection"]
+    
     item = collection.find_one({"_id": item_id})
 
     if item is None:
@@ -40,8 +41,7 @@ async def read_item(item_id: ObjectIdField) -> JSONResponse:
 @router.post("/")
 async def create_item(item: CreateItem = Body(...)) -> JSONResponse:
     """This method creates a new item entity and stores in MongoDb"""
-    data_base = mdbc["test-database"]
-    collection = data_base["test-collection"]
+    
     result = collection.insert_one(jsonable_encoder(item))
     created_item = collection.find_one({"_id": result.inserted_id})
     return JSONResponse(
@@ -53,8 +53,7 @@ async def create_item(item: CreateItem = Body(...)) -> JSONResponse:
 @router.delete("/{item_id}")
 async def delete_item(item_id: ObjectIdField) -> JSONResponse:
     """This method delete an  item entity"""
-    data_base = mdbc["test-database"]
-    collection = data_base["test-collection"]
+   
     result = collection.delete_one({"_id": item_id})
 
     if result.acknowledged & result.deleted_count == 1:
@@ -73,9 +72,6 @@ async def put_item(
     item_id: ObjectIdField, item: UpdateItem = Body(...)
 ) -> JSONResponse:
     """This method update an item entity"""
-    data_base = mdbc["test-database"]
-    collection = data_base["test-collection"]
-
     items_to_update = {k: v for k, v in item.dict().items() if v is not None}
 
     if len(items_to_update) >= 1:
