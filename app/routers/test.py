@@ -23,9 +23,7 @@ async def read_test():
 
 
 @router.post("/")
-async def create_item(
-    item: CreateItem = Body(...)
-) -> JSONResponse:
+async def create_item(item: CreateItem = Body(...)) -> JSONResponse:
     """This method creates a new item entity and stores in MongoDb"""
     data_base = mdbc["test-database"]
     collection = data_base["test-collection"]

@@ -5,6 +5,7 @@ from pydantic_mongo import ObjectIdField
 
 class CreateItemResponse(BaseModel):
     """Create Item Response Model object, used for HTTP Post response"""
+
     id: ObjectIdField = Field(None, alias="_id")
     name: str
     description: str | None
