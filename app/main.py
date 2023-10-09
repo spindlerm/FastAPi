@@ -1,11 +1,11 @@
 """This module is used to setup the FastAPI app and its routers"""
 from fastapi import FastAPI
 from pymongo import MongoClient
-from app.routers import test
+from app.routers import item
 
 
 app = FastAPI()
-app.include_router(test.router)
+app.include_router(item.router)
 
 
 @app.on_event("startup")
