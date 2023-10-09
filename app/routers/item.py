@@ -39,10 +39,17 @@ async def read_item(item_id: ObjectIdField) -> JSONResponse:
 
 
 @router.post("/")
-async def create_item(item: CreateItem = Body(...)) -> JSONResponse:
+async def create_item(item: CreateItem = Body(...), return_item: bool = False) -> JSONResponse:
     """This method creates a new item entity and stores in MongoDb"""
     
     result = collection.insert_one(jsonable_encoder(item))
+
+    if return_item == False:
+        return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content=jsonable_encoder({"_id": str(result.inserted_id)}))
+
+    # Caller has requested that the inseted item be returned in the JSON response
     created_item = collection.find_one({"_id": result.inserted_id})
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,

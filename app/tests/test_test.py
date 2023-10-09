@@ -31,6 +31,38 @@ def test_create():
     retrived_item["_id"] = item_id
     assert response.json() == retrived_item
 
+def test_create_return_item_false():
+    """Test the creation (post) and get for an item"""
+
+    item_to_create = {
+        "name": "joes Bloggs",
+        "description": "This is joes item",
+        "price": 10,
+        "tax": 1.6,
+    }
+
+    retrived_item = item_to_create
+
+    response = client.post("/items?return_item=False", json=item_to_create)
+    assert response.status_code == 201
+    assert response.json() == {"_id": f'{response.json()["_id"]}'}
+
+def test_create_return_item_true():
+    """Test the creation (post) and get for an item"""
+
+    item_to_create = {
+        "name": "joes Bloggs",
+        "description": "This is joes item",
+        "price": 10,
+        "tax": 1.6,
+    }
+
+    item_created = item_to_create
+
+    response = client.post("/items?return_item=True", json=item_to_create)
+    assert response.status_code == 201
+    item_created["_id"] = response.json()["_id"]
+    assert response.json() == item_created
 
 def test_create_with_missing_mandatory_fields():
     """Test the creation (post) with missing mandatory fields"""
