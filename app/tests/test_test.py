@@ -39,39 +39,20 @@ def test_create_with_missing_mandatory_fields():
         "name": "joes Bloggs",
     }
 
-    retrived_item = item_to_create
+    response = client.post("/items", json=item_to_create)
+    assert response.status_code == 422
+
+    item_to_create = {"name": "joes Bloggs", "description": "descr"}
 
     response = client.post("/items", json=item_to_create)
     assert response.status_code == 422
 
-    item_to_create = {
-        "name": "joes Bloggs",
-        "description" : "descr"
-    }
-
-    retrived_item = item_to_create
+    item_to_create = {"name": "joes Bloggs", "description": "descr", "price": 10}
 
     response = client.post("/items", json=item_to_create)
     assert response.status_code == 422
 
-    item_to_create = {
-        "name": "joes Bloggs",
-        "description" : "descr",
-        "price" : 10
-    }
-
-    retrived_item = item_to_create
-
-    response = client.post("/items", json=item_to_create)
-    assert response.status_code == 422
-
-    item_to_create = {
-        "name": "joes Bloggs",
-        "description" : "descr",
-        "tax" : 10.99
-    }
-
-    retrived_item = item_to_create
+    item_to_create = {"name": "joes Bloggs", "description": "descr", "tax": 10.99}
 
     response = client.post("/items", json=item_to_create)
     assert response.status_code == 422
@@ -180,6 +161,7 @@ def test_put_with_valid_item_all_fields():
     test_item["name"] = "updated name"
     test_item["_id"] = item_id
     assert response.json() == item_to_create
+
 
 def test_put_with_valid_item_selected_fields():
     """When calling put with a valid item (selected fields), return 404 - Item not Found"""

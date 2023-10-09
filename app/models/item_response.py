@@ -6,10 +6,10 @@ from pydantic_mongo import ObjectIdField
 class ItemResponse(BaseModel):
     """Item Response Model object, used for HTTP Get/Post response"""
 
-     # All fields are mandatory for when an item is returned
+    # All fields are mandatory for when an item is returned
     id: ObjectIdField = Field(None, alias="_id")
     name: str
     description: str | None
     price: int = Field(ge=0, le=10)
-    tax: float 
+    tax: float
     model_config = ConfigDict(arbitrary_types_allowed=True)
