@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from pydantic_mongo import ObjectIdField
 from app.models.create_item import CreateItem
 from app.models.update_item import UpdateItem
-from app.models.create_item_response import CreateItemResponse
+from app.models.item_response import ItemResponse
 
 
 mdbc = MongoClient("mongodb://localhost:27017/")
@@ -19,7 +19,7 @@ router = APIRouter(
 
 
 @router.get("/{item_id}")
-async def read_test(item_id: ObjectIdField) -> JSONResponse:
+async def read_item(item_id: ObjectIdField) -> JSONResponse:
     """Called to get an Item"""
     data_base = mdbc["test-database"]
     collection = data_base["test-collection"]
@@ -33,7 +33,7 @@ async def read_test(item_id: ObjectIdField) -> JSONResponse:
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(CreateItemResponse(**item)),
+        content=jsonable_encoder(ItemResponse(**item)),
     )
 
 
@@ -46,7 +46,7 @@ async def create_item(item: CreateItem = Body(...)) -> JSONResponse:
     created_item = collection.find_one({"_id": result.inserted_id})
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
-        content=jsonable_encoder(CreateItemResponse(**created_item)),
+        content=jsonable_encoder(ItemResponse(**created_item)),
     )
 
 

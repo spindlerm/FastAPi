@@ -5,7 +5,8 @@ from pydantic import BaseModel, Field
 class CreateItem(BaseModel):
     """CreateItem Model"""
 
+    # All fields are mandatory for the create operation
     name: str
     description: str | None
     price: int = Field(ge=0, le=10)
-    tax: float | None = None
+    tax: float
