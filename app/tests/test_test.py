@@ -32,6 +32,51 @@ def test_create():
     assert response.json() == retrived_item
 
 
+def test_create_with_missing_mandatory_fields():
+    """Test the creation (post) with missing mandatory fields"""
+
+    item_to_create = {
+        "name": "joes Bloggs",
+    }
+
+    retrived_item = item_to_create
+
+    response = client.post("/items", json=item_to_create)
+    assert response.status_code == 422
+
+    item_to_create = {
+        "name": "joes Bloggs",
+        "description" : "descr"
+    }
+
+    retrived_item = item_to_create
+
+    response = client.post("/items", json=item_to_create)
+    assert response.status_code == 422
+
+    item_to_create = {
+        "name": "joes Bloggs",
+        "description" : "descr",
+        "price" : 10
+    }
+
+    retrived_item = item_to_create
+
+    response = client.post("/items", json=item_to_create)
+    assert response.status_code == 422
+
+    item_to_create = {
+        "name": "joes Bloggs",
+        "description" : "descr",
+        "tax" : 10.99
+    }
+
+    retrived_item = item_to_create
+
+    response = client.post("/items", json=item_to_create)
+    assert response.status_code == 422
+
+
 def test_get_nonexistent_item():
     """When calling get with a non existant id, retrun 404 - Item not Found"""
 
@@ -109,8 +154,8 @@ def test_put_nonexistent_item():
     assert response.json() == f"Item with id: {item_id} does not exist"
 
 
-def test_put_with_valid_item():
-    """When calling put with a valid item, return 404 - Item not Found"""
+def test_put_with_valid_item_all_fields():
+    """When calling put with a valid item (all fields), return 404 - Item not Found"""
 
     item_to_create = {
         "name": "joes Bloggs",
@@ -119,6 +164,33 @@ def test_put_with_valid_item():
         "tax": 1.6,
     }
     item_to_update = item_to_create
+    test_item = item_to_create
+    response = client.post("/items", json=item_to_create)
+    assert response.status_code == 201
+
+    # Update the item with the return id to check it was created"
+    item_id = ObjectIdField(response.json()["_id"])
+    item_to_update["name"] = "updated name"
+    response = client.put(f"/items/{item_id}", json=item_to_update)
+    assert response.status_code == 200
+
+    # Fetch the updated item with the id and check it was updated"
+    response = client.get(f"/items/{ObjectIdField(item_id)}")
+    assert response.status_code == 200
+    test_item["name"] = "updated name"
+    test_item["_id"] = item_id
+    assert response.json() == item_to_create
+
+def test_put_with_valid_item_selected_fields():
+    """When calling put with a valid item (selected fields), return 404 - Item not Found"""
+
+    item_to_create = {
+        "name": "joes Bloggs",
+        "description": "This is joes item",
+        "price": 10,
+        "tax": 1.6,
+    }
+    item_to_update = {}
     test_item = item_to_create
     response = client.post("/items", json=item_to_create)
     assert response.status_code == 201
