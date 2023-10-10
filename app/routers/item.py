@@ -62,7 +62,7 @@ async def create_item(
 
 @router.delete("/{item_id}")
 async def delete_item(item_id: ObjectIdField) -> JSONResponse:
-    """This method delete an  item entity"""
+    """This method deletes an item entity"""
 
     result = collection.delete_one({"_id": item_id})
 
@@ -81,8 +81,8 @@ async def delete_item(item_id: ObjectIdField) -> JSONResponse:
 async def put_item(
     item_id: ObjectIdField, item: UpdateItem = Body(...)
 ) -> JSONResponse:
-   
-    print("  UU")
+    """This method implements put for an item entity"""
+ 
     items_to_update = {k: v for k, v in item.model_dump().items() if v is not None}
 
     if len(items_to_update) >= 1:
