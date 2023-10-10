@@ -25,3 +25,13 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
+    - uses: rickstaa/action-black@v1
+    - name: Create Docker network
+      run: docker network create docker_network
+    - name: Run MongoDb docker image
+      run: docker run --network=docker_network --name mongoDb 
+             -p 27017:27017 -d --rm mongo:latest
+    - name: Run Tests
+      run: |
+        make test
+
