@@ -82,6 +82,7 @@ async def put_item(
     item_id: ObjectIdField, item: UpdateItem = Body(...)
 ) -> JSONResponse:
    
+    print("UU")
     items_to_update = {k: v for k, v in item.model_dump().items() if v is not None}
 
     if len(items_to_update) >= 1:
