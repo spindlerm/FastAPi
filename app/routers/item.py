@@ -81,7 +81,7 @@ async def delete_item(item_id: ObjectIdField) -> JSONResponse:
 async def put_item(
     item_id: ObjectIdField, item: UpdateItem = Body(...)
 ) -> JSONResponse:
-   
+    """This method updates an item entity"""
     items_to_update = {k: v for k, v in item.model_dump().items() if v is not None}
 
     if len(items_to_update) >= 1:
