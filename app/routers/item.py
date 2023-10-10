@@ -82,7 +82,7 @@ async def put_item(
     item_id: ObjectIdField, item: UpdateItem = Body(...)
 ) -> JSONResponse:
     """This method update an item entity"""
-    items_to_update = {k: v for k, v in item.dict().items() if v is not None}
+    items_to_update = {k: v for k, v in item.model_dump().items() if v is not None}
 
     if len(items_to_update) >= 1:
         update_result = collection.update_one(
