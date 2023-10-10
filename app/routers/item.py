@@ -64,6 +64,11 @@ async def create_item(
 async def delete_item(item_id: ObjectIdField) -> JSONResponse:
     """This method deletes an item entity"""
 
+
+
+
+    
+
     result = collection.delete_one({"_id": item_id})
 
     if result.acknowledged & result.deleted_count == 1:
