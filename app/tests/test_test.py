@@ -1,9 +1,18 @@
 """Example pytest tests"""
+from fastapi import Response
 from fastapi.testclient import TestClient
 from pydantic_mongo import ObjectIdField
 from app.main import app
 
 client = TestClient(app)
+
+
+def create_item(item_to_create: dict, return_item: bool = False) -> Response:
+    """Helper method to create a new item in MongoDb"""
+    if return_item is True:
+        return client.post("/items?return_item=True", json=item_to_create)
+
+    return client.post("/items", json=item_to_create)
 
 
 def test_create():
@@ -59,7 +68,7 @@ def test_create_return_item_true():
 
     item_created = item_to_create
 
-    response = client.post("/items?return_item=True", json=item_to_create)
+    response = create_item(item_to_create, True)
     assert response.status_code == 201
     item_created["_id"] = response.json()["_id"]
     assert response.json() == item_created
@@ -72,22 +81,22 @@ def test_create_with_missing_mandatory_fields():
         "name": "joes Bloggs",
     }
 
-    response = client.post("/items", json=item_to_create)
+    response = create_item(item_to_create)
     assert response.status_code == 422
 
     item_to_create = {"name": "joes Bloggs", "description": "descr"}
 
-    response = client.post("/items", json=item_to_create)
+    response = create_item(item_to_create)
     assert response.status_code == 422
 
     item_to_create = {"name": "joes Bloggs", "description": "descr", "price": 10}
 
-    response = client.post("/items", json=item_to_create)
+    response = create_item(item_to_create)
     assert response.status_code == 422
 
     item_to_create = {"name": "joes Bloggs", "description": "descr", "tax": 10.99}
 
-    response = client.post("/items", json=item_to_create)
+    response = create_item(item_to_create)
     assert response.status_code == 422
 
 
@@ -110,6 +119,28 @@ def test_get_with_invalid_id():
 
     response = client.get(f"/items/{item_id}")
     assert response.status_code == 422
+
+
+def test_get_all():
+    """When calling get with with no id, should return all entries"""
+
+    item_to_create = {
+        "name": "Matt",
+        "description": "This is joes item",
+        "price": 10,
+        "tax": 1.6,
+    }
+
+    # Make sure there is at least 3 items existing in MongoDb
+    create_item(item_to_create)
+    create_item(item_to_create)
+    create_item(item_to_create)
+
+    response = client.get("/items")
+    assert response.status_code == 200
+
+    item_list = list(response.json())
+    assert len(item_list) >= 3
 
 
 def test_delete_invalid_id():

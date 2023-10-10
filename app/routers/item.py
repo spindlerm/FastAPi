@@ -4,10 +4,12 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pymongo import MongoClient
 from pydantic_mongo import ObjectIdField
+from bson import ObjectId
 from app.models.create_item import CreateItem
 from app.models.update_item import UpdateItem
 from app.models.item_response import ItemResponse
 
+# pylint: disable=W0108
 
 mdbc = MongoClient("mongodb://localhost:27017/")
 data_base = mdbc["test-database"]
@@ -22,7 +24,7 @@ router = APIRouter(
 
 @router.get("/{item_id}")
 async def read_item(item_id: ObjectIdField) -> JSONResponse:
-    """Called to get an Item"""
+    """Called to get an Item using its id"""
 
     item = collection.find_one({"_id": item_id})
 
@@ -31,10 +33,19 @@ async def read_item(item_id: ObjectIdField) -> JSONResponse:
             status_code=status.HTTP_404_NOT_FOUND,
             content=f"Item with id: {item_id} does not exist",
         )
-
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=jsonable_encoder(ItemResponse(**item)),
+    )
+
+
+@router.get("/")
+async def read_item(response_model=list[ItemResponse]) -> JSONResponse:
+    # pylint: disable=unused-argument
+    """Called to return a list of items"""
+    return jsonable_encoder(
+        list(collection.find({})),
+        custom_encoder={ObjectId: lambda oid: str(oid)},
     )
 
 
