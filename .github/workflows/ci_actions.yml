@@ -29,7 +29,7 @@ jobs:
     - name: Create Docker network
       run: docker network create docker_network
     - name: Run MongoDb docker image
-      run: docker run --docker_network=pg --name mongoDb 
+      run: docker run --network=docker_network --name mongoDb 
              -p 27017:27017 -d --rm mongo:latest
     - name: Run Tests
       run: |
