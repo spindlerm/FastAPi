@@ -40,11 +40,13 @@ async def read_item(item_id: ObjectIdField) -> JSONResponse:
 
 
 @router.get("/")
-async def read_all_items(response_model=list[ItemResponse]) -> JSONResponse:
+async def read_all_items(
+    limit: int = 5, skip: int = 0, response_model=list[ItemResponse]
+) -> JSONResponse:
     # pylint: disable=unused-argument
     """Called to return a list of items"""
     return jsonable_encoder(
-        list(collection.find({})),
+        list(collection.find({}).skip(skip).limit(limit)),
         custom_encoder={ObjectId: lambda oid: str(oid)},
     )
 
