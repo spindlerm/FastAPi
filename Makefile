@@ -1,7 +1,7 @@
 format:
 	black .
 lint:
-	pylint  app/ --disable=E Makefile
+	pylint  app/ 
 run:
 	 uvicorn app.main:app --reload
 
