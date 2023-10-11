@@ -2,6 +2,7 @@
 from fastapi import Response
 from fastapi.testclient import TestClient
 from pydantic_mongo import ObjectIdField
+import pytest
 from app.main import app
 
 client = TestClient(app)
@@ -13,6 +14,17 @@ def create_item(item_to_create: dict, return_item: bool = False) -> Response:
         return client.post("/items?return_item=True", json=item_to_create)
 
     return client.post("/items", json=item_to_create)
+
+
+@pytest.fixture()
+def delete_all_items():
+    """Fixture used to delete all ietms in the MongoDb"""
+    response = client.get("/items?limit=1000")
+
+    for item in response.json():
+        print(item["_id"])
+        response = client.delete(f"/items/{item['_id']}?")
+        print(response.status_code)
 
 
 def test_create():
@@ -121,8 +133,9 @@ def test_get_with_invalid_id():
     assert response.status_code == 422
 
 
-def test_get_all():
-    """When calling get with with no id, should return all entries"""
+@pytest.mark.usefixtures("delete_all_items")
+def test_get_all_nolimit_no_skip():
+    """When calling get with with no id, no limit or skip, should return all entries"""
 
     item_to_create = {
         "name": "Matt",
@@ -140,7 +153,79 @@ def test_get_all():
     assert response.status_code == 200
 
     item_list = list(response.json())
-    assert len(item_list) >= 3
+    assert len(item_list) == 3
+
+
+@pytest.mark.usefixtures("delete_all_items")
+def test_get_all_with_limit():
+    """When calling get with with no id, and a limit  should return (limit) no of items  entries"""
+
+    item_to_create = {
+        "name": "Fred",
+        "description": "This is Fred item",
+        "price": 10,
+        "tax": 1.6,
+    }
+
+    # Make sure there are 10 items existing in MongoDb
+    for _ in range(0, 10):
+        create_item(item_to_create)
+
+    # set limit to 5 items
+    response = client.get("/items?limit=5")
+    assert response.status_code == 200
+
+    item_list = list(response.json())
+    assert len(item_list) == 5
+
+
+@pytest.mark.usefixtures("delete_all_items")
+def test_get_all_with_skip():
+    """When calling get with with no id, and a limit  should return (limit) no of items  entries"""
+
+    item_to_create = {
+        "name": "Fred",
+        "description": "This is Fred item",
+        "price": 10,
+        "tax": 1.6,
+    }
+
+    # Make sure there are 10 items existing in MongoDb
+    for _ in range(0, 10):
+        create_item(item_to_create)
+
+    # set limit to 5 items
+    response = client.get("/items?skip=9")
+    assert response.status_code == 200
+
+    item_list = list(response.json())
+    assert len(item_list) == 1
+
+
+@pytest.mark.usefixtures("delete_all_items")
+def test_get_all_with_skip_and_limit_paging():
+    """When calling get with with no id, and a limit  should return (limit) no of items  entries"""
+
+    item_to_create = {
+        "name": "Fred",
+        "description": "This is Fred item",
+        "price": 10,
+        "tax": 1.6,
+    }
+
+    # Make sure there are 10 items existing in MongoDb
+    for i in range(0, 10):
+        item_to_create["price"] = i
+        create_item(item_to_create)
+
+    # List itms 2 at a time, checking price
+    for i in range(0, 5):
+        response = client.get(f"/items?skip={i*2}&limit=2")
+        assert response.status_code == 200
+        item_list = list(response.json())
+        assert len(item_list) == 2
+        assert item_list[0]["price"] == (i * 2)
+        assert item_list[1]["price"] == (i * 2) + 1
 
 
 def test_delete_invalid_id():
