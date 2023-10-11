@@ -40,7 +40,7 @@ async def read_item(item_id: ObjectIdField) -> JSONResponse:
 
 
 @router.get("/")
-async def read_item(response_model=list[ItemResponse]) -> JSONResponse:
+async def read_all_items(response_model=list[ItemResponse]) -> JSONResponse:
     # pylint: disable=unused-argument
     """Called to return a list of items"""
     return jsonable_encoder(
