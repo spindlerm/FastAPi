@@ -203,7 +203,7 @@ def test_get_all_with_skip():
 
 
 @pytest.mark.usefixtures("delete_all_items")
-def test_get_all_with_skip_and_Limit_paging():
+def test_get_all_with_skip_and_limit_paging():
     """When calling get with with no id, and a limit  should return (limit) no of items  entries"""
 
     item_to_create = {
