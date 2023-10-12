@@ -1,8 +1,7 @@
 """Setup the router for the /test route"""
-from fastapi import APIRouter, Body, status
+from fastapi import APIRouter, Body, status, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from pymongo import MongoClient
 from pydantic_mongo import ObjectIdField
 from bson import ObjectId
 from app.models.create_item import CreateItem
@@ -10,11 +9,6 @@ from app.models.update_item import UpdateItem
 from app.models.item_response import ItemResponse
 
 # pylint: disable=W0108
-
-mdbc = MongoClient("mongodb://localhost:27017/")
-data_base = mdbc["test-database"]
-collection = data_base["test-collection"]
-
 router = APIRouter(
     prefix="/items",
     tags=["Item api"],
@@ -23,10 +17,10 @@ router = APIRouter(
 
 
 @router.get("/{item_id}")
-async def read_item(item_id: ObjectIdField) -> JSONResponse:
+async def read_item(item_id: ObjectIdField, request: Request) -> JSONResponse:
     """Called to get an Item using its id"""
 
-    item = collection.find_one({"_id": item_id})
+    item = await request.app.state.collection.find_one({"_id": item_id})
 
     if item is None:
         return JSONResponse(
@@ -41,23 +35,29 @@ async def read_item(item_id: ObjectIdField) -> JSONResponse:
 
 @router.get("/")
 async def read_all_items(
-    limit: int = 5, skip: int = 0, response_model=list[ItemResponse]
+    request: Request, limit: int = 5, skip: int = 0, response_model=list[ItemResponse]
 ) -> JSONResponse:
     # pylint: disable=unused-argument
-    """Called to return a list of items"""
+    """Called to return a list of items, this method is pagable and you can limit the results too"""
+    return_list = []
+    cursor = request.app.state.collection.find({}).skip(skip).limit(limit)
+    async for item in cursor:
+        return_list.append(item)
+    # return_list = await cursor.to_list(length=limit)
+
     return jsonable_encoder(
-        list(collection.find({}).skip(skip).limit(limit)),
+        return_list,
         custom_encoder={ObjectId: lambda oid: str(oid)},
     )
 
 
 @router.post("/")
 async def create_item(
-    item: CreateItem = Body(...), return_item: bool = False
+    request: Request, item: CreateItem = Body(...), return_item: bool = False
 ) -> JSONResponse:
-    """This method creates a new item entity and stores in MongoDb"""
+    """This method creates a new item"""
 
-    result = collection.insert_one(jsonable_encoder(item))
+    result = await request.app.state.collection.insert_one(jsonable_encoder(item))
 
     if return_item is False:
         return JSONResponse(
@@ -66,7 +66,9 @@ async def create_item(
         )
 
     # Caller has requested that the inseted item be returned in the JSON response
-    created_item = collection.find_one({"_id": result.inserted_id})
+    created_item = await request.app.state.collection.find_one(
+        {"_id": result.inserted_id}
+    )
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=jsonable_encoder(ItemResponse(**created_item)),
@@ -74,10 +76,10 @@ async def create_item(
 
 
 @router.delete("/{item_id}")
-async def delete_item(item_id: ObjectIdField) -> JSONResponse:
-    """This method deletes an item entity"""
+async def delete_item(request: Request, item_id: ObjectIdField) -> JSONResponse:
+    """This method deletes an item"""
 
-    result = collection.delete_one({"_id": item_id})
+    result = await request.app.state.collection.delete_one({"_id": item_id})
 
     if result.acknowledged & result.deleted_count == 1:
         return JSONResponse(
@@ -92,14 +94,14 @@ async def delete_item(item_id: ObjectIdField) -> JSONResponse:
 
 @router.put("/{item_id}")
 async def put_item(
-    item_id: ObjectIdField, item: UpdateItem = Body(...)
+    request: Request, item_id: ObjectIdField, item: UpdateItem = Body(...)
 ) -> JSONResponse:
-    """This method implements put for an item entity"""
+    """This method updates an existing item"""
 
     items_to_update = {k: v for k, v in item.model_dump().items() if v is not None}
 
     if len(items_to_update) >= 1:
-        update_result = collection.update_one(
+        update_result = await request.app.state.collection.update_one(
             {"_id": item_id}, {"$set": items_to_update}
         )
 
