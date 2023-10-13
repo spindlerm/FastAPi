@@ -1,22 +1,42 @@
 """This module is used to setup the FastAPI app and its routers"""
 from fastapi import FastAPI
-from pymongo import MongoClient
+import motor.motor_tornado
 from app.routers import item
 
 
-app = FastAPI()
-app.include_router(item.router)
+# This code block is my refactored main.py
+def app_factory():
+    """Helper factory method to create the FAstAPI App object"""
+    myapp = FastAPI()
+    myapp.include_router(item.router)
+    return myapp
 
 
-@app.on_event("startup")
-def startup_db_client():
+async def app_startup(my_app):
     """Startup event, connect to MongoDb"""
-    app.mongodb_client = MongoClient("mongodb://localhost:27017/")
-    app.database = app.mongodb_client["test-database"]
+    my_app.state.mongodb_client = motor.motor_tornado.MotorClient(
+        "mongodb://localhost:27017"
+    )
+    my_app.state.database = my_app.state.mongodb_client["test-database"]
+    my_app.state.collection = my_app.state.database["test-collection"]
     print("Connected to the MongoDB database!")
 
 
-@app.on_event("shutdown")
-def shutdown_db_client():
+async def app_shutdown(my_app):
     """Shutdown event, disconnect from MongoDb"""
-    app.mongodb_client.close()
+    my_app.state.mongodb_client.close()
+
+
+app = app_factory()
+
+
+@app.on_event("startup")
+async def start_up():
+    """Application startup event"""
+    await app_startup(app)
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    """Application shutdown event"""
+    await app_shutdown(app)
