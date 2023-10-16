@@ -1,8 +1,9 @@
 """This module is used to setup the FastAPI app and its routers"""
 from fastapi import FastAPI
 import motor.motor_tornado
-from app.routers import item
 from mangum import Mangum
+from app.routers import item
+
 
 
 # This code block is my refactored main.py
