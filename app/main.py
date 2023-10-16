@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 import motor.motor_tornado
 from app.routers import item
+from mangum import Mangum
 
 
 # This code block is my refactored main.py
@@ -28,7 +29,7 @@ async def app_shutdown(my_app):
 
 
 app = app_factory()
-
+handler = Mangum(app, lifespan="off")
 
 @app.on_event("startup")
 async def start_up():
