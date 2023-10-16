@@ -5,7 +5,6 @@ from mangum import Mangum
 from app.routers import item
 
 
-
 # This code block is my refactored main.py
 def app_factory():
     """Helper factory method to create the FAstAPI App object"""
@@ -31,6 +30,7 @@ async def app_shutdown(my_app):
 
 app = app_factory()
 handler = Mangum(app, lifespan="off")
+
 
 @app.on_event("startup")
 async def start_up():
