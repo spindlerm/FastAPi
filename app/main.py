@@ -1,6 +1,7 @@
 """This module is used to setup the FastAPI app and its routers"""
 from fastapi import FastAPI
 import motor.motor_tornado
+from mangum import Mangum
 from app.routers import item
 
 
@@ -28,6 +29,7 @@ async def app_shutdown(my_app):
 
 
 app = app_factory()
+handler = Mangum(app, lifespan="off")
 
 
 @app.on_event("startup")
