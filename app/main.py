@@ -1,15 +1,29 @@
 """This module is used to setup the FastAPI app and its routers"""
+import os
 from fastapi import FastAPI
 import motor.motor_tornado
 from mangum import Mangum
 from app.routers import item
 
 
+# AWS api gateway stage name
+stage = os.getenv("ENVIRONMENT")
+
+# Fix up the doc url, and openapi.json path to work with the stage name (if supplied)
+root_path = f"/{stage}" if stage else "/"
+doc_url = f"/{stage}/docs" if stage else "/docs"
+openapi_url = f"/{stage}/openapi.json" if stage else "/openapi.json"
+
+
 # This code block is my refactored main.py
 def app_factory():
     """Helper factory method to create the FAstAPI App object"""
-    myapp = FastAPI()
-    myapp.include_router(item.router)
+    myapp = FastAPI(openapi_url=openapi_url, docs_url=doc_url)
+    if stage:
+        myapp.include_router(item.router, prefix=root_path)
+    else:
+        myapp.include_router(item.router)
+
     return myapp
 
 

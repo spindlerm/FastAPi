@@ -7,8 +7,8 @@ COPY requirements.txt ${LAMBDA_TASK_ROOT}
 RUN pip install -r requirements.txt
 
 # Copy function code. This copies EVERYTHING inside the app folder to the lambda root.
-COPY ./app ${LAMBDA_TASK_ROOT}
+COPY ./app ./app
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 # Since we copied 
-CMD ["main.handler"]
+CMD ["app.main.handler"]
