@@ -29,8 +29,9 @@ def app_factory():
 
 async def app_startup(my_app):
     """Startup event, connect to MongoDb"""
+    #"mongodb://localhost:27017"#
     my_app.state.mongodb_client = motor.motor_tornado.MotorClient(
-        "mongodb://localhost:27017"
+        "mongodb://tf_fast_api_admin:<insertYourPassword>@tf-fast-api.cluster-ca0oycycbugw.eu-west-2.docdb.amazonaws.com:27017/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
     )
     my_app.state.database = my_app.state.mongodb_client["test-database"]
     my_app.state.collection = my_app.state.database["test-collection"]
