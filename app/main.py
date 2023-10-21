@@ -8,6 +8,7 @@ from app.routers import item
 
 # AWS api gateway stage name
 stage = os.getenv("ENVIRONMENT")
+mongo_connection_string = os.getenv("CONNECTION_STRING")
 
 # Fix up the doc url, and openapi.json path to work with the stage name (if supplied)
 root_path = f"/{stage}" if stage else "/"
@@ -29,8 +30,9 @@ def app_factory():
 
 async def app_startup(my_app):
     """Startup event, connect to MongoDb"""
+    # "mongodb://localhost:27017"#
     my_app.state.mongodb_client = motor.motor_tornado.MotorClient(
-        "mongodb://localhost:27017"
+        mongo_connection_string
     )
     my_app.state.database = my_app.state.mongodb_client["test-database"]
     my_app.state.collection = my_app.state.database["test-collection"]
